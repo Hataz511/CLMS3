@@ -1,9 +1,5 @@
 Chemical Management System — Sprint 2
 
-Author: Hata
-Data: 1 Prill 2026
-Version: 1.0.0
-
 Përmbledhje Projekti
 
 Ky projekt është një Chemical Management System që lejon përdoruesin të:
