@@ -27,25 +27,67 @@ Audit trail për veprime kritike
 
 Sistemi përfshin mbi 40 use cases që modelojnë procese reale laboratorike.
 
-# 2. Çka funksionon mirë?
+# 2. Çka funksionon mirë
 ## 1️⃣ Role-Based Access Control (RBAC)
 
-Autorizimet janë të ndara qartë sipas roleve, duke rritur sigurinë dhe kontrollin.
+Sistemi implementon një mekanizëm të qartë të kontrollit të qasjes bazuar në role (RBAC), ku autorizimet janë të përcaktuara në mënyrë eksplicite për secilin aktor (Student, Professor, Lab Technician, Lab Assistant, Administrator).
 
-## 2️⃣ Strukturimi i use cases
+Kjo ndarje:
 
-Use cases janë të organizuara sipas moduleve (user, inventory, reservation, experiments), duke reflektuar analizë të mirë të sistemit.
+Redukton rrezikun e aksesit të paautorizuar
+Kufizon privilegjet sipas parimit të least privilege
+Rrit sigurinë dhe integritetin institucional
+Lehtëson auditimin dhe gjurmimin e përgjegjësive
+
+Strukturimi i qartë i autorizimeve tregon një modelim të mirë të domenit dhe kuptim të proceseve reale laboratorike.
+
+## 2️⃣ Strukturimi i Use Cases
+
+Use cases janë të organizuara sipas moduleve funksionale (User Management, Inventory Management, Reservation Management, Experiment Management), duke reflektuar një analizë të strukturuar të kërkesave.
+
+Kjo qasje:
+
+Ofron ndarje logjike të përgjegjësive
+Redukton kompleksitetin kognitiv
+Rrit modularitetin e sistemit
+Lehtëson mirëmbajtjen dhe zgjerimin e ardhshëm
+
+Fakti që sistemi përfshin mbi 100 use cases të dokumentuara tregon analizë të thelluar të proceseve operative dhe mbulim të gjerë të skenarëve funksionalë.
 
 ## 3️⃣ Workflow i qartë operacional
 
-Proceset si rezervimi ndjekin rrjedhë logjike:
+Proceset kryesore të sistemit ndjekin rrjedhë të strukturuar dhe të kontrolluar, duke reflektuar modelim korrekt të proceseve reale.
 
-rezervim → miratim → ekzekutim → vlerësim
+Shembull i rrjedhës së rezervimit:
+
+Rezervim → Miratim → Ekzekutim → Vlerësim → Arkivim
+
+Ky model:
+
+Siguron kontroll të statusit në çdo fazë
+Parandalon kalimin e paautorizuar midis gjendjeve
+Rrit transparencën operacionale
+Mundëson validim në çdo tranzicion
+
+Implementimi i një workflow të qartë është indikator i dizajnit të menduar mirë dhe i disiplinës arkitekturore.
 
 ## 4️⃣ Audit & Logging
 
-Veprimet kritike regjistrohen me timestamp dhe user reference, duke siguruar gjurmueshmëri.
+Sistemi regjistron veprimet kritike me:
 
+Timestamp
+Identifikim të përdoruesit
+Tipin e veprimit
+Entitetin e prekur
+
+Kjo siguron:
+
+Gjurmueshmëri të plotë (traceability)
+Mbështetje për investigime dhe kontrolle të brendshme
+Përgjegjësi individuale për veprime kritike
+Bazë për analiza të sigurisë dhe performancës
+
+Prania e një mekanizmi auditimi e pozicionon sistemin në nivel më profesional dhe më të përshtatshëm për mjedise akademike institucionale.
 # 3. Dobësitë e projektit
 ## 1️⃣ Kompleksitet i lartë arkitekturor
 
