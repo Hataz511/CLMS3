@@ -1,263 +1,316 @@
 # Project Audit
-## Chemical Laboratory Management System (CLMS)
-** sprint 1 **
-# 1. Përshkrimi i shkurtër i projektit
-## Çka bën sistemi?
+
+**Chemical Laboratory Management System (CLMS)**
+**Sprint 1**
+
+---
+
+## 1. Përshkrimi i shkurtër i projektit
+
+### Çka bën sistemi?
 
 Chemical Laboratory Management System (CLMS) është një sistem softuerik për menaxhimin e proceseve laboratorike në një institucion akademik. Sistemi mbulon menaxhimin e kimikateve, pajisjeve, rezervimeve të laboratorëve, eksperimenteve dhe raporteve të studentëve.
 
 Ai strukturon rrjedhën e punës ndërmjet studentëve, profesorëve dhe stafit laboratorik, duke siguruar kontroll, gjurmueshmëri dhe integritet të të dhënave.
 
- ## Kush janë përdoruesit kryesorë?
+---
 
-Sistemi përfshin këto role:
+### Kush janë përdoruesit kryesorë?
 
-Student – rezervon laborator, kryen eksperimente, dorëzon raporte
-Professor – krijon eksperimente, miraton rezervime, vlerëson raporte
-Lab Technician – menaxhon inventarin dhe kimikatet
-Lab Assistant – ndihmon gjatë eksperimenteve dhe monitoron sigurinë
-Administrator – menaxhon përdoruesit dhe monitoron sistemin
-Cili është funksionaliteti kryesor?
-Menaxhim i përdoruesve dhe roleve
-Menaxhim i kimikateve dhe inventarit
-Rezervim dhe miratim laboratorësh
-Menaxhim i eksperimenteve
-Dorëzim dhe vlerësim raportesh
-Audit trail për veprime kritike
+* **Student** – rezervon laborator, kryen eksperimente, dorëzon raporte
+* **Professor** – krijon eksperimente, miraton rezervime, vlerëson raporte
+* **Lab Technician** – menaxhon inventarin dhe kimikatet
+* **Lab Assistant** – ndihmon gjatë eksperimenteve dhe monitoron sigurinë
+* **Administrator** – menaxhon përdoruesit dhe monitoron sistemin
 
-Sistemi përfshin mbi 40 use cases që modelojnë procese reale laboratorike.
+---
 
-# 2. Çka funksionon mirë
-## 1️⃣ Role-Based Access Control (RBAC)
+### Cili është funksionaliteti kryesor?
 
-Sistemi implementon një mekanizëm të qartë të kontrollit të qasjes bazuar në role (RBAC), ku autorizimet janë të përcaktuara në mënyrë eksplicite për secilin aktor (Student, Professor, Lab Technician, Lab Assistant, Administrator).
+* Menaxhim i përdoruesve dhe roleve (RBAC)
+* Menaxhim i kimikateve dhe inventarit
+* Rezervim dhe miratim laboratorësh
+* Menaxhim i eksperimenteve
+* Dorëzim dhe vlerësim raportesh
+* Audit trail për veprime kritike
 
-Kjo ndarje:
+Sistemi përfshin mbi **40 use cases**, duke modeluar procese reale laboratorike.
 
-Redukton rrezikun e aksesit të paautorizuar
-Kufizon privilegjet sipas parimit të least privilege
-Rrit sigurinë dhe integritetin institucional
-Lehtëson auditimin dhe gjurmimin e përgjegjësive
+---
 
-Strukturimi i qartë i autorizimeve tregon një modelim të mirë të domenit dhe kuptim të proceseve reale laboratorike.
-csharp
-public bool CanApproveReservation(User user)
-{
+## 2. Çka funksionon mirë
+
+### 1️⃣ Role-Based Access Control (RBAC)
+
+Sistemi implementon kontroll të qartë të qasjes bazuar në role.
+
+```csharp
+public bool CanApproveReservation(User user) {
     return user.Role == UserRole.Professor;
 }
+```
 
-## 2️⃣ Strukturimi i Use Cases
+**Përfitimet:**
 
-Use cases janë të organizuara sipas moduleve funksionale (User Management, Inventory Management, Reservation Management, Experiment Management), duke reflektuar një analizë të strukturuar të kërkesave.
+* Redukton aksesin e paautorizuar
+* Zbaton parimin e *least privilege*
+* Rrit sigurinë dhe integritetin
+* Lehtëson auditimin
 
-Kjo qasje:
+---
 
-Ofron ndarje logjike të përgjegjësive
-Redukton kompleksitetin kognitiv
-Rrit modularitetin e sistemit
-Lehtëson mirëmbajtjen dhe zgjerimin e ardhshëm
+### 2️⃣ Strukturimi i Use Cases
 
-Fakti që sistemi përfshin mbi 40 use cases të dokumentuara tregon analizë të thelluar të proceseve operative dhe mbulim të gjerë të skenarëve funksionalë.
+Use cases janë të ndara në module:
+
+* User Management
+* Inventory Management
+* Reservation Management
+* Experiment Management
+
+```csharp
 public class ReservationService
+```
 
-## 3️⃣ Workflow i qartë operacional
+**Përfitimet:**
 
-Proceset kryesore të sistemit ndjekin rrjedhë të strukturuar dhe të kontrolluar, duke reflektuar modelim korrekt të proceseve reale.
+* Modularitet i lartë
+* Reduktim i kompleksitetit
+* Mirëmbajtje më e lehtë
+* Skalueshmëri në të ardhmen
 
-Shembull i rrjedhës së rezervimit:
+---
 
-Rezervim → Miratim → Ekzekutim → Vlerësim → Arkivim
+### 3️⃣ Workflow i qartë operacional
 
-Ky model:
+Proceset ndjekin një rrjedhë të strukturuar:
 
-Siguron kontroll të statusit në çdo fazë
-Parandalon kalimin e paautorizuar midis gjendjeve
-Rrit transparencën operacionale
-Mundëson validim në çdo tranzicion
+**Rezervim → Miratim → Ekzekutim → Vlerësim → Arkivim**
 
-Implementimi i një workflow të qartë është indikator i dizajnit të menduar mirë dhe i disiplinës arkitekturore.
+**Përfitimet:**
 
-## 4️⃣ Audit & Logging
+* Kontroll i qartë i statuseve
+* Parandalim i gabimeve logjike
+* Transparencë në procese
+* Validim në çdo fazë
 
-Sistemi regjistron veprimet kritike me:
+---
 
-Timestamp
-Identifikim të përdoruesit
-Tipin e veprimit
-Entitetin e prekur
+### 4️⃣ Audit & Logging
 
-Kjo siguron:
-
-Gjurmueshmëri të plotë (traceability)
-Mbështetje për investigime dhe kontrolle të brendshme
-Përgjegjësi individuale për veprime kritike
-Bazë për analiza të sigurisë dhe performancës
-public static class Logger
-{
-    public static void Log(string message)
-    {
-        File.AppendAllText("log.txt",
-            $"{DateTime.Now}: {message}{Environment.NewLine}");
+```csharp
+public static class Logger {
+    public static void Log(string message) {
+        File.AppendAllText("log.txt", $"{DateTime.Now}: {message}{Environment.NewLine}");
     }
 }
-Kjo krijon audit trail për veprime të rëndësishme.
+```
 
-Prania e një mekanizmi auditimi e pozicionon sistemin në nivel më profesional dhe më të përshtatshëm për mjedise akademike institucionale.
-# 3. Dobësitë e projektit
-## 1️⃣ Kompleksitet i lartë arkitekturor
+**Përfitimet:**
 
-Me mbi 40 use cases ekziston rreziku i:
+* Gjurmueshmëri (traceability)
+* Kontroll dhe investigim
+* Përgjegjësi individuale
+* Bazë për analiza të sigurisë
 
-Coupling të lartë
-Duplikim logjike
-Vështirësi në mirëmbajtje
-## 2️⃣ Validim jo i centralizuar
+---
 
-Validimi është i shpërndarë në pjesë të ndryshme të sistemit.
+## 3. Dobësitë e projektit
 
-Shembull nga kodi:
+### 1️⃣ Kompleksitet i lartë arkitekturor
 
+* Rrezik për coupling të lartë
+* Duplikim logjike
+* Vështirësi në mirëmbajtje
+
+---
+
+### 2️⃣ Validim jo i centralizuar
+
+```javascript
 // Controller
 if (!date || !labId) {
-    return res.status(400).json({ message: "Missing required fields" });
+  return res.status(400).json({ message: "Missing required fields" });
 }
+
 // Service
 if (experiment.duration <= 0) {
-    throw new Error("Invalid duration");
+  throw new Error("Invalid duration");
 }
+```
 
-👉 Kjo krijon inkonsistencë dhe logjikë të dyfishtë.
+👉 Logjikë e shpërndarë dhe jo konsistente
 
-## 3️⃣ Error handling jo i standardizuar
+---
 
-Gabimet trajtohen në mënyra të ndryshme.
+### 3️⃣ Error handling jo i standardizuar
 
+```javascript
 try {
-    await createReservation(data);
+  await createReservation(data);
 } catch (err) {
-    return res.status(500).json({ error: err.message });
+  return res.status(500).json({ error: err.message });
 }
+```
 
-👉 Nuk ka strukturë të përbashkët për gabimet.
+👉 Nuk ka strukturë të përbashkët për gabimet
 
-## 4️⃣ Test coverage i pamjaftueshëm
+---
+
+### 4️⃣ Test coverage i pamjaftueshëm
 
 Mungojnë teste për:
- 
-Edge cases
-Workflow transitions
-Concurrency
 
-Shembull që mungon:
+* Edge cases
+* Workflow transitions
+* Concurrency
 
+```javascript
 it("should prevent double booking for same time slot", async () => {
-    // missing test
+  // missing test
 });
-## 5️⃣ Problemet me concurrency
+```
 
-Rezervimet nuk janë të mbrojtura nga race conditions.
+---
 
+### 5️⃣ Problemet me concurrency
+
+```javascript
 const existing = await Reservation.findOne({ labId, date });
 
 if (!existing) {
-    await Reservation.create({ labId, date, userId });
+  await Reservation.create({ labId, date, userId });
 }
+```
 
-👉 Dy kërkesa simultane mund të krijojnë double booking.
+👉 Mund të ndodhë **double booking**
 
-## 6️⃣ Siguria bazike
+---
 
-Shembull i dobët:
+### 6️⃣ Siguria bazike
 
+```javascript
 user.password = req.body.password;
+```
 
-👉 Mungon hashing dhe mbrojtje ndaj inputeve.
+👉 Mungon:
 
-# 4. 3 përmirësime që do t’i implementoj
-## 🔹 Përmirësimi 1: Centralizim i Validimit
+* hashing i password-it
+* validim inputi
 
-Problemi:
-Validimi është i shpërndarë dhe jo konsistent.
+---
 
-Zgjidhja:
+### 7️⃣ UI Flow jo i optimizuar
 
+* Navigimi nuk është intuitiv
+* Kërkon shumë hapa për operacione të thjeshta
+
+👉 Ndikon negativisht në eksperiencën e përdoruesit
+
+---
+
+## 4. 3 përmirësime që do t’i implementoj
+
+### 🔹 Përmirësimi 1: Centralizim i Validimit
+
+**Problemi:**
+Validimi është i shpërndarë dhe jo konsistent
+
+**Zgjidhja:**
+
+```javascript
 function validateReservation(data) {
-    if (!data.labId) throw new Error("Lab is required");
-    if (!data.date) throw new Error("Date is required");
+  if (!data.labId) throw new Error("Lab is required");
+  if (!data.date) throw new Error("Date is required");
 }
+```
 
-Përdorimi:
+**Pse ka rëndësi:**
 
-validateReservation(req.body);
+* Konsistencë
+* Integritet i të dhënave
+* Kod më i mirëmbajtshëm
 
-Pse ka rëndësi:
+---
 
-Konsistencë
-Integritet i të dhënave
-Kod më i mirëmbajtshëm
-## 🔹 Përmirësimi 2: Rritje e Test Coverage
+### 🔹 Përmirësimi 2: Rritje e Test Coverage
 
-Problemi:
-Testet nuk mbulojnë të gjitha rastet.
+**Problemi:**
+Testet nuk mbulojnë të gjitha rastet
 
-Zgjidhja:
+**Zgjidhja:**
 
-Unit tests për çdo modul
-Integration tests
-Testim i roleve dhe workflow
+* Unit tests për çdo modul
+* Integration tests
+* Testim i roleve dhe workflow
 
-Shembull:
-
+```javascript
 it("should prevent double booking", async () => {
-    // test concurrency
+  // concurrency test
 });
+```
 
-Pse ka rëndësi:
+**Pse ka rëndësi:**
 
-Redukton bugs
-Rrit stabilitetin
-Siguri gjatë refactor
-## 🔹 Përmirësimi 3: Transaction & Concurrency Control
+* Redukton bugs
+* Rrit stabilitetin
+* Siguri gjatë refactor
 
-Problemi:
-Rezervimet mund të krijojnë konflikte.
+---
 
-Zgjidhja:
+### 🔹 Përmirësimi 3: Transaction & Concurrency Control
 
+**Problemi:**
+Rezervimet krijojnë konflikte
+
+**Zgjidhja:**
+
+```javascript
 await db.transaction(async (t) => {
-    const existing = await Reservation.findOne({ where: { labId, date }, transaction: t });
+  const existing = await Reservation.findOne({
+    where: { labId, date },
+    transaction: t
+  });
 
-    if (existing) throw new Error("Already booked");
+  if (existing) throw new Error("Already booked");
 
-    await Reservation.create(data, { transaction: t });
+  await Reservation.create(data, { transaction: t });
 });
+```
 
-Pse ka rëndësi:
+**Pse ka rëndësi:**
 
-Parandalon double booking
-Rrit besueshmërinë
-Siguron integritet të të dhënave
-# 5. Një pjesë që ende nuk e kuptoj plotësisht
+* Parandalon double booking
+* Rrit besueshmërinë
+* Siguron integritet të të dhënave
+
+---
+
+## 5. Një pjesë që ende nuk e kuptoj plotësisht
 
 Menaxhimi i concurrency dhe izolimi i transaksioneve në sisteme multi-user.
 
-Veçanërisht dua të kuptoj:
+Veçanërisht:
 
-Si implementohen isolation levels në praktikë
-Si shmangen race conditions në sisteme reale
-Kur përdoret optimistic vs pessimistic locking
+* Si funksionojnë isolation levels në praktikë
+* Si shmangen race conditions në sisteme reale
+* Kur përdoret **optimistic vs pessimistic locking**
 
-Kjo është kritike për një sistem si CLMS që përfshin rezervime dhe menaxhim inventari në kohë reale.
+**Shembull konkret:**
+Në rastin kur dy studentë bëjnë rezervim në të njëjtën kohë, nuk është plotësisht e qartë si databaza vendos cili transaksion ekzekutohet i pari në nivelin *READ COMMITTED*.
 
-# Përfundim
+---
+
+## Përfundim
 
 CLMS është një sistem kompleks që modelon procese reale laboratorike dhe përfshin shumë role dhe use cases.
 
 Sistemi ka një bazë të fortë, por kërkon përmirësime në:
 
-Validim
-Testim
-Concurrency control
-Siguri
+* Validim
+* Testim
+* Concurrency control
+* Siguri
 
-Ky auditim demonstron analizë kritike dhe qasje inxhinierike për përmirësim të sistemit drejt një implementimi production-level.
+Ky auditim demonstron analizë kritike dhe qasje inxhinierike për përmirësim të sistemit drejt një implementimi **production-level**.
+
