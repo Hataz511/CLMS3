@@ -40,6 +40,11 @@ Rrit sigurinë dhe integritetin institucional
 Lehtëson auditimin dhe gjurmimin e përgjegjësive
 
 Strukturimi i qartë i autorizimeve tregon një modelim të mirë të domenit dhe kuptim të proceseve reale laboratorike.
+```csharp
+public bool CanApproveReservation(User user)
+{
+    return user.Role == UserRole.Professor;
+}
 
 ## 2️⃣ Strukturimi i Use Cases
 
@@ -52,7 +57,8 @@ Redukton kompleksitetin kognitiv
 Rrit modularitetin e sistemit
 Lehtëson mirëmbajtjen dhe zgjerimin e ardhshëm
 
-Fakti që sistemi përfshin mbi 100 use cases të dokumentuara tregon analizë të thelluar të proceseve operative dhe mbulim të gjerë të skenarëve funksionalë.
+Fakti që sistemi përfshin mbi 40 use cases të dokumentuara tregon analizë të thelluar të proceseve operative dhe mbulim të gjerë të skenarëve funksionalë.
+public class ReservationService
 
 ## 3️⃣ Workflow i qartë operacional
 
@@ -86,6 +92,15 @@ Gjurmueshmëri të plotë (traceability)
 Mbështetje për investigime dhe kontrolle të brendshme
 Përgjegjësi individuale për veprime kritike
 Bazë për analiza të sigurisë dhe performancës
+public static class Logger
+{
+    public static void Log(string message)
+    {
+        File.AppendAllText("log.txt",
+            $"{DateTime.Now}: {message}{Environment.NewLine}");
+    }
+}
+Kjo krijon audit trail për veprime të rëndësishme.
 
 Prania e një mekanizmi auditimi e pozicionon sistemin në nivel më profesional dhe më të përshtatshëm për mjedise akademike institucionale.
 # 3. Dobësitë e projektit
