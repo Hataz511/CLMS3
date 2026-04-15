@@ -1,14 +1,14 @@
-Project Audit
-Chemical Laboratory Management System (CLMS)
-sprint 1
-1. Përshkrimi i shkurtër i projektit
-Çka bën sistemi?
+# Project Audit
+## Chemical Laboratory Management System (CLMS)
+** sprint 1 **
+# 1. Përshkrimi i shkurtër i projektit
+## Çka bën sistemi?
 
 Chemical Laboratory Management System (CLMS) është një sistem softuerik për menaxhimin e proceseve laboratorike në një institucion akademik. Sistemi mbulon menaxhimin e kimikateve, pajisjeve, rezervimeve të laboratorëve, eksperimenteve dhe raporteve të studentëve.
 
 Ai strukturon rrjedhën e punës ndërmjet studentëve, profesorëve dhe stafit laboratorik, duke siguruar kontroll, gjurmueshmëri dhe integritet të të dhënave.
 
-Kush janë përdoruesit kryesorë?
+ ## Kush janë përdoruesit kryesorë?
 
 Sistemi përfshin këto role:
 
@@ -27,34 +27,34 @@ Audit trail për veprime kritike
 
 Sistemi përfshin mbi 40 use cases që modelojnë procese reale laboratorike.
 
-2. Çka funksionon mirë?
-1️⃣ Role-Based Access Control (RBAC)
+# 2. Çka funksionon mirë?
+## 1️⃣ Role-Based Access Control (RBAC)
 
 Autorizimet janë të ndara qartë sipas roleve, duke rritur sigurinë dhe kontrollin.
 
-2️⃣ Strukturimi i use cases
+## 2️⃣ Strukturimi i use cases
 
 Use cases janë të organizuara sipas moduleve (user, inventory, reservation, experiments), duke reflektuar analizë të mirë të sistemit.
 
-3️⃣ Workflow i qartë operacional
+## 3️⃣ Workflow i qartë operacional
 
 Proceset si rezervimi ndjekin rrjedhë logjike:
 
 rezervim → miratim → ekzekutim → vlerësim
 
-4️⃣ Audit & Logging
+## 4️⃣ Audit & Logging
 
 Veprimet kritike regjistrohen me timestamp dhe user reference, duke siguruar gjurmueshmëri.
 
-3. Dobësitë e projektit
-1️⃣ Kompleksitet i lartë arkitekturor
+# 3. Dobësitë e projektit
+## 1️⃣ Kompleksitet i lartë arkitekturor
 
 Me mbi 40 use cases ekziston rreziku i:
 
 Coupling të lartë
 Duplikim logjike
 Vështirësi në mirëmbajtje
-2️⃣ Validim jo i centralizuar
+## 2️⃣ Validim jo i centralizuar
 
 Validimi është i shpërndarë në pjesë të ndryshme të sistemit.
 
@@ -71,7 +71,7 @@ if (experiment.duration <= 0) {
 
 👉 Kjo krijon inkonsistencë dhe logjikë të dyfishtë.
 
-3️⃣ Error handling jo i standardizuar
+## 3️⃣ Error handling jo i standardizuar
 
 Gabimet trajtohen në mënyra të ndryshme.
 
@@ -83,10 +83,10 @@ try {
 
 👉 Nuk ka strukturë të përbashkët për gabimet.
 
-4️⃣ Test coverage i pamjaftueshëm
+## 4️⃣ Test coverage i pamjaftueshëm
 
 Mungojnë teste për:
-
+ 
 Edge cases
 Workflow transitions
 Concurrency
@@ -96,7 +96,7 @@ Shembull që mungon:
 it("should prevent double booking for same time slot", async () => {
     // missing test
 });
-5️⃣ Problemet me concurrency
+## 5️⃣ Problemet me concurrency
 
 Rezervimet nuk janë të mbrojtura nga race conditions.
 
@@ -108,7 +108,7 @@ if (!existing) {
 
 👉 Dy kërkesa simultane mund të krijojnë double booking.
 
-6️⃣ Siguria bazike
+## 6️⃣ Siguria bazike
 
 Shembull i dobët:
 
@@ -116,8 +116,8 @@ user.password = req.body.password;
 
 👉 Mungon hashing dhe mbrojtje ndaj inputeve.
 
-4. 3 përmirësime që do t’i implementoj
-🔹 Përmirësimi 1: Centralizim i Validimit
+# 4. 3 përmirësime që do t’i implementoj
+## 🔹 Përmirësimi 1: Centralizim i Validimit
 
 Problemi:
 Validimi është i shpërndarë dhe jo konsistent.
@@ -138,7 +138,7 @@ Pse ka rëndësi:
 Konsistencë
 Integritet i të dhënave
 Kod më i mirëmbajtshëm
-🔹 Përmirësimi 2: Rritje e Test Coverage
+## 🔹 Përmirësimi 2: Rritje e Test Coverage
 
 Problemi:
 Testet nuk mbulojnë të gjitha rastet.
@@ -160,7 +160,7 @@ Pse ka rëndësi:
 Redukton bugs
 Rrit stabilitetin
 Siguri gjatë refactor
-🔹 Përmirësimi 3: Transaction & Concurrency Control
+## 🔹 Përmirësimi 3: Transaction & Concurrency Control
 
 Problemi:
 Rezervimet mund të krijojnë konflikte.
@@ -180,7 +180,7 @@ Pse ka rëndësi:
 Parandalon double booking
 Rrit besueshmërinë
 Siguron integritet të të dhënave
-5. Një pjesë që ende nuk e kuptoj plotësisht
+# 5. Një pjesë që ende nuk e kuptoj plotësisht
 
 Menaxhimi i concurrency dhe izolimi i transaksioneve në sisteme multi-user.
 
@@ -192,7 +192,7 @@ Kur përdoret optimistic vs pessimistic locking
 
 Kjo është kritike për një sistem si CLMS që përfshin rezervime dhe menaxhim inventari në kohë reale.
 
-Përfundim
+# Përfundim
 
 CLMS është një sistem kompleks që modelon procese reale laboratorike dhe përfshin shumë role dhe use cases.
 
