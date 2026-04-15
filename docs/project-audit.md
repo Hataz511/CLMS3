@@ -40,7 +40,7 @@ Rrit sigurinë dhe integritetin institucional
 Lehtëson auditimin dhe gjurmimin e përgjegjësive
 
 Strukturimi i qartë i autorizimeve tregon një modelim të mirë të domenit dhe kuptim të proceseve reale laboratorike.
-```csharp
+csharp
 public bool CanApproveReservation(User user)
 {
     return user.Role == UserRole.Professor;
