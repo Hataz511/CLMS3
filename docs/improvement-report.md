@@ -1,7 +1,7 @@
 
-# Chemical Laboratory Management System (CLMS)
+# improvement-report.md
 
-## Improvement Report
+# Chemical Laboratory Management System (CLMS)
 
 ---
 
@@ -17,13 +17,11 @@ Qëllimi i këtij sprinti nuk ishte shtimi i funksionaliteteve të reja, por:
 * Përmirësimi i dokumentimit teknik
 * Demonstrimi i mendimit kritik inxhinierik
 
-Janë realizuar 3 përmirësime kryesore:
+Janë realizuar 3 përmirësime thelbësore:
 
-* Structural / Architectural Refactor
-* Reliability & Validation Hardening
-* Documentation & Engineering Transparency
-
-👉 **Rezultati:** Sistemi është transformuar nga një implementim bazik në një arkitekturë modulare, të testueshme dhe të gatshme për zgjerim production-grade.
+* Structural / Code Improvement
+* Reliability & Validation Improvement
+* Documentation & Architectural Transparency Improvement
 
 ---
 
@@ -33,65 +31,106 @@ Janë realizuar 3 përmirësime kryesore:
 
 Në versionin fillestar:
 
-* `FileRepository` përmbante:
+* `FileRepository<T>` përmbante logjikë të përzier:
 
-  * File IO
-  * Parsing CSV
-  * Error handling
+  * parsing CSV
+  * file handling
+  * error handling
+* Service layer kishte validim minimal
+* `Program.cs` kryente manual wiring pa strukturë të qartë
 * Nuk kishte abstraction për file handling
-* Tight coupling me CSV
-* Validim i shpërndarë
+* Repository ishte tightly coupled me CSV
 
-👉 **Pasoja:**
+👉 Kjo krijonte:
 
-* Shkelje e SRP (Single Responsibility Principle)
+* Tight coupling
 * Vështirësi në testim
-* Vështirësi në migrim në database
+* Vështirësi në zgjerim (p.sh. kalim në DB)
 
 ---
 
 ## 🔧 Çfarë U Ndryshua
 
-### ✔ Ndarja e përgjegjësive
+### 1.1 Ndarja e File Handling
 
-* `IFileStorage` → File operations
-* `Repository` → Data mapping + CRUD
-* `Service` → Business logic + validation
-* `UI` → Interaction me përdoruesin
+```csharp
+public interface IFileStorage
+{
+    bool FileExists(string path);
+    IEnumerable<string> ReadAllLines(string path);
+    void WriteAllLines(string path, IEnumerable<string> lines);
+}
+```
+
+```csharp
+public class CsvFileStorage : IFileStorage
+{
+    public bool FileExists(string path)
+        => File.Exists(path);
+
+    public IEnumerable<string> ReadAllLines(string path)
+        => File.ReadAllLines(path);
+
+    public void WriteAllLines(string path, IEnumerable<string> lines)
+        => File.WriteAllLines(path, lines);
+}
+```
 
 ---
 
-## 🔄 Before vs After (Concrete Example)
+### 1.2 Repository sipas SRP
+
+`FileRepository<T>` tani:
+
+* Nuk merret me File IO
+* Nuk merret me validation
+* Nuk merret me logging
+
+Merret vetëm me:
+
+* Mapping CSV ↔ Model
+* CRUD operacione
+
+---
+
+### 1.3 Dependency Injection
+
+```csharp
+IFileStorage storage = new CsvFileStorage();
+IRepository<Chemical> repo = new FileRepository<Chemical>(storage);
+IChemicalService service = new ChemicalService(repo);
+IUserInterface ui = new ConsoleUI(service);
+
+ui.Run();
+```
+
+---
+
+## 🔄 Before vs After (Concrete Comparison)
 
 **Before:**
 
-* Repository menaxhonte gjithçka (file, parsing, validation)
+* Repository menaxhonte file IO, parsing dhe error handling
+* Nuk kishte ndarje të qartë të përgjegjësive
 
 **After:**
 
 * FileStorage → vetëm file IO
-* Repository → vetëm data mapping
-* Service → validation dhe logjikë
+* Repository → vetëm data mapping dhe CRUD
+* Service → validation dhe business logic
 
-👉 Eliminim i coupling dhe rritje modulariteti
+👉 Ky ndryshim ul kompleksitetin dhe rrit modularitetin.
+## System Architecture Flow
 
+UI → Service → Repository → FileStorage → CSV
 ---
 
-## 💉 Dependency Injection
-
-Sistemi tani përdor DI për loose coupling:
-
-* Mundëson mocking
-* Lehtëson testimin
-* Lejon zëvendësim të implementimeve
-
----
-
-## 🧠 Pse është më i mirë
+## 🧠 Pse Versioni i Ri Është Më i Mirë
 
 * ✔ Respekton SRP dhe DIP
+* ✔ Eliminon tight coupling
 * ✔ Rrit testueshmërinë
-* ✔ Lehtëson zgjerimin (p.sh. DB)
+* ✔ Lehtëson migrimin drejt database
 
 ---
 
@@ -99,42 +138,82 @@ Sistemi tani përdor DI për loose coupling:
 
 ## 📌 Problemi Fillestar
 
-* File që mungon → crash
-* ID jo-ekzistuese → exception i paqartë
-* Pa validim inputesh
-* Pa error handling
+* CSV që mungon → aplikacioni dështonte
+* ID jo-ekzistues → null reference
+* Nuk kishte validim për inpute
+* Nuk kishte error handling të strukturuar
 
-👉 Sistemi ishte i brishtë dhe jo user-friendly
+👉 Sistemi ishte i brishtë (fragile)
 
 ---
 
 ## 🔧 Çfarë U Ndryshua
 
-### ✔ File handling i sigurt
+### 2.1 Trajtim i file që mungon
 
-* Krijohet file automatikisht nëse mungon
-
-### ✔ Validim në Service Layer
-
-* Kontroll për:
-
-  * emër bosh
-  * çmim negativ
-  * sasi negative
-
-### ✔ Trajtim i ID jo-ekzistues
-
-* Exception i qartë (`KeyNotFoundException`)
-
-### ✔ Error handling në UI
-
-* Try-catch për të shmangur crash
+```csharp
+if (!storage.FileExists(_filePath))
+{
+    storage.WriteAllLines(_filePath, new List<string>());
+}
+```
 
 ---
 
-## 🧪 Unit Testing (NEW – Critical Improvement)
+### 2.2 Validim në Service Layer
 
-Për të garantuar correctness, u shtuan teste bazë:
+```csharp
+public void AddChemical(Chemical chemical)
+{
+    if (string.IsNullOrWhiteSpace(chemical.Name))
+        throw new ArgumentException("Chemical name cannot be empty.");
+
+    if (chemical.Price <= 0)
+        throw new ArgumentException("Price must be greater than zero.");
+
+    if (chemical.Quantity < 0)
+        throw new ArgumentException("Quantity cannot be negative.");
+
+    _repository.Add(chemical);
+    _repository.Save();
+}
+```
+
+---
+
+### 2.3 Trajtim i ID që nuk ekziston
+
+```csharp
+public Chemical GetById(int id)
+{
+    var chemical = _repository.GetById(id);
+
+    if (chemical == null)
+        throw new KeyNotFoundException($"Chemical with ID {id} not found.");
+
+    return chemical;
+}
+```
+
+---
+
+### 2.4 Try-Catch në UI
+
+```csharp
+try
+{
+    service.DeleteChemical(id);
+    Console.WriteLine("Deleted successfully.");
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"Error: {ex.Message}");
+}
+```
+
+---
+
+## 🧪 Unit Testing (Basic but Critical)
 
 ```csharp
 [Test]
@@ -149,106 +228,117 @@ public void AddChemical_ShouldThrow_WhenNameIsEmpty()
 
 ```csharp
 [Test]
-public void GetById_ShouldThrow_WhenNotFound()
+public void GetById_ShouldThrow_WhenChemicalDoesNotExist()
 {
     Assert.Throws<KeyNotFoundException>(() =>
         service.GetById(999));
 }
 ```
 
-👉 **Impact:**
-
-* Parandalon regresionet
-* Validon business logic
-* Rrit besueshmërinë e sistemit
+👉 Siguron që validimi dhe error handling funksionojnë siç pritet.
 
 ---
 
-## 🧠 Pse është më i mirë
+## 🧠 Pse Versioni i Ri Është Më i Mirë
 
-* ✔ Nuk crash-on
+* ✔ Nuk crash-on më
+* ✔ Parandalon input të pavlefshëm
 * ✔ Jep feedback të qartë
-* ✔ Është më i sigurt dhe stabil
+* ✔ Rrit robustness dhe stabilitetin
+### 🎯 Real Impact Scenario
 
+Before:
+Nëse file CSV mungonte, aplikacioni dështonte menjëherë.
+
+After:
+Aplikacioni krijon automatikisht file-in dhe vazhdon funksionimin pa ndërprerje.
+
+👉 Ky ndryshim eliminon një pikë kritike dështimi dhe rrit stabilitetin e sistemit.
 ---
 
 # 4️⃣ Improvement 3 – Documentation & Engineering Transparency
 
 ## 📌 Problemi Fillestar
 
-* Dokumentim sipërfaqësor
-* Pa shpjegim të vendimeve
+* Dokumentim kryesisht përshkrues
+* Pa analizë të vendimeve
+* Pa identifikim të kufizimeve
 
 ---
 
-## 🔧 Çfarë U Shtua
+## 🔧 Çfarë U Ndryshua
 
-### ✔ architecture.md
+### 3.1 architecture.md
 
-* Diagram i layer-ve
-* Flow i dependencies
-
-### ✔ Design Decisions
-
-* CSV për thjeshtësi
-* DB për production
-
-### ✔ Known Limitations
-
-* No concurrency
-* No logging
-* No transactions
-
-### ✔ Setup Instructions (NEW)
-
-* Si të ekzekutohet projekti
-* Si të strukturohen files
+* Layer diagram
+* Dependency flow
+* Arsyetim i arkitekturës
 
 ---
 
-## 🧠 Pse është më i mirë
+### 3.2 Design Decisions
 
-* ✔ Lehtëson onboarding
+Shembull:
+
+CSV u përdor për thjeshtësi akademike, ndërsa në production do të zëvendësohej me database për scalability dhe concurrency.
+
+---
+
+### 3.3 Known Limitations
+
+* Mungesë concurrency control
+* Mungesë logging
+* Test coverage i kufizuar
+* Mungesë authentication
+
+---
+
+### 3.4 Setup Instructions
+
+1. Klono repository
+2. Hap projektin në Visual Studio
+3. Run nga `Program.cs`
+4. CSV krijohet automatikisht nëse mungon
+
+---
+
+## 🧠 Pse Është Më i Mirë
+
 * ✔ Rrit transparencën
-* ✔ Reflekton mendim inxhinierik
+* ✔ Lehtëson onboarding
+* ✔ Tregon mendim inxhinierik real
 
 ---
 
-# 5️⃣ Reflection – Critical Thinking
+# 5️⃣ Reflection – Mendim Kritik
 
-Ky sprint tregoi që:
+Ky sprint tregoi se:
 
 * Kod që funksionon ≠ kod i mirë
-* Arkitektura është po aq e rëndësishme sa implementimi
+* Strukturë funksionale ≠ strukturë e qëndrueshme
 
 👉 **Gabim konkret:**
-Validimi fillimisht ishte në UI → shpërndarje e logjikës
-Zgjidhja → centralizim në Service layer
+Validimi fillimisht ishte në UI, duke shkaktuar shpërndarje të logjikës.
+Pas refactor-it u centralizua në Service layer, duke përmirësuar konsistencën dhe mirëmbajtjen.
 
 👉 **Çfarë mësova:**
 
-* Abstraction është kritik për scalability
+* Abstraction rrit fleksibilitetin
 * Separation of concerns rrit maintainability
-* Defensive programming parandalon bug-e
+* Defensive programming parandalon gabime
 * Refactoring është proces i vazhdueshëm
 
 ---
 
-# 6️⃣ Remaining Weaknesses
+# 6️⃣ Çfarë Mbetet Ende e Dobët
 
-## High Priority
+* Test coverage i kufizuar
+* Nuk ka logging framework (Serilog / NLog)
+* Nuk ka concurrency control
+* Nuk ka data versioning
+* Nuk ka authentication të avancuar
 
-* Logging (Serilog / NLog)
-* Test coverage më i gjerë
-
-## Medium
-
-* Concurrency control
-* Data persistence me DB
-
-## Low
-
-* Authentication
+👉 Këto janë hapat e ardhshëm drejt production-grade.
 
 ---
 
@@ -260,13 +350,14 @@ Ky sprint nuk ishte për shtim features, por për:
 * Rritje të reliability
 * Përmirësim të dokumentimit
 
-👉 Sistemi tani është:
+Projekti tani:
 
-* Modular
-* I testueshëm
-* Robust
-* I gatshëm për zgjerim
+* Është modular
+* Është i testueshëm
+* Është robust
+* Është i dokumentuar
+* Është teknikisht i arsyetuar
 
-Ky refactor e transformon projektin nga një aplikacion akademik në një bazë solide për një sistem production-grade.
+👉 Ky rezultat demonstron jo vetëm implementim, por kuptim të thellë të inxhinierisë së softuerit.
 
 ---
