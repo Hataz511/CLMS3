@@ -1,4 +1,4 @@
-# improvement-report.md
+
 # Chemical Laboratory Management System (CLMS)
 # 1️⃣ Executive Summary
 Ky dokument paraqet një analizë kritike dhe përmirësim të thelluar të projektit Chemical Laboratory Management System (CLMS).
