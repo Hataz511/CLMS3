@@ -1,247 +1,272 @@
 
 # Chemical Laboratory Management System (CLMS)
+
+## Improvement Report
+
+---
+
 # 1️⃣ Executive Summary
+
 Ky dokument paraqet një analizë kritike dhe përmirësim të thelluar të projektit Chemical Laboratory Management System (CLMS).
 
-Qëllimi nuk ishte thjesht shtimi i funksionaliteteve të reja, por:
+Qëllimi i këtij sprinti nuk ishte shtimi i funksionaliteteve të reja, por:
 
-Të identifikohen dobësitë arkitekturore,
-Të përmirësohet struktura e kodit,
-Të rritet reliability dhe robustness,
-Të përmirësohet dokumentimi teknik,
-Të demonstrohet mendim kritik inxhinierik
+* Identifikimi i dobësive arkitekturore
+* Përmirësimi i strukturës së kodit
+* Rritja e reliability dhe robustness
+* Përmirësimi i dokumentimit teknik
+* Demonstrimi i mendimit kritik inxhinierik
 
-Janë realizuar 3 përmirësime thelbësore, të ndara në:
+Janë realizuar 3 përmirësime kryesore:
 
-Structural / Code Improvement,
-Reliability & Validation Improvement,
-Documentation & Architectural Transparency Improvement.
+* Structural / Architectural Refactor
+* Reliability & Validation Hardening
+* Documentation & Engineering Transparency
+
+👉 **Rezultati:** Sistemi është transformuar nga një implementim bazik në një arkitekturë modulare, të testueshme dhe të gatshme për zgjerim production-grade.
+
+---
+
 # 2️⃣ Improvement 1 – Structural Refactor & Architectural Hardening
+
 ## 📌 Problemi Fillestar
 
 Në versionin fillestar:
 
-FileRepository<T> përmbante logjikë të përzier:
-parsing CSV,
-file handling,
-error handling,
-Service layer kishte validim minimal,
-Program.cs kryente manual wiring të varësive,
-Nuk kishte abstraction për File Handling,
-Repository ishte shumë i varur nga implementimi i CSV
+* `FileRepository` përmbante:
 
-Kjo krijonte:
+  * File IO
+  * Parsing CSV
+  * Error handling
+* Nuk kishte abstraction për file handling
+* Tight coupling me CSV
+* Validim i shpërndarë
 
-Tight coupling,
-Vështirësi në testim,
-Vështirësi në zgjerim (p.sh. kalim nga CSV në DB)
-# Çfarë U Ndryshua
-## 1.1 U nda File Handling nga Repository
+👉 **Pasoja:**
 
-U krijua:
+* Shkelje e SRP (Single Responsibility Principle)
+* Vështirësi në testim
+* Vështirësi në migrim në database
 
-public interface IFileStorage
-{
-    bool FileExists(string path);
-    IEnumerable<string> ReadAllLines(string path);
-    void WriteAllLines(string path, IEnumerable<string> lines);
-}
+---
 
-Implementimi:
+## 🔧 Çfarë U Ndryshua
 
-public class CsvFileStorage : IFileStorage
-{
-    public bool FileExists(string path)
-        => File.Exists(path);
+### ✔ Ndarja e përgjegjësive
 
-    public IEnumerable<string> ReadAllLines(string path)
-        => File.ReadAllLines(path);
+* `IFileStorage` → File operations
+* `Repository` → Data mapping + CRUD
+* `Service` → Business logic + validation
+* `UI` → Interaction me përdoruesin
 
-    public void WriteAllLines(string path, IEnumerable<string> lines)
-        => File.WriteAllLines(path, lines);
-}
+---
 
-Repository tani përdor IFileStorage si dependency.
+## 🔄 Before vs After (Concrete Example)
 
-## 1.2 Repository u bë më i pastër (Single Responsibility)
+**Before:**
 
-FileRepository<T> tani:
+* Repository menaxhonte gjithçka (file, parsing, validation)
 
-Nuk merret me File IO direkt,
-Nuk merret me validim,
-Nuk merret me logging,
+**After:**
 
-Merret vetëm me:
+* FileStorage → vetëm file IO
+* Repository → vetëm data mapping
+* Service → validation dhe logjikë
 
-Mapping CSV ↔ Model,
-CRUD operacione
-## 1.3 Dependency Injection më i qartë
+👉 Eliminim i coupling dhe rritje modulariteti
 
-Program.cs tani:
+---
 
-IFileStorage storage = new CsvFileStorage();
-IRepository<Chemical> repo = new FileRepository<Chemical>(storage);
-IChemicalService service = new ChemicalService(repo);
-IUserInterface ui = new ConsoleUI(service);
+## 💉 Dependency Injection
 
-ui.Run();
-## 🧠 Pse Versioni i Ri Është Më i Mirë
+Sistemi tani përdor DI për loose coupling:
 
-✔ Respekton SRP (Single Responsibility Principle),
-✔ Respekton DIP (Dependency Inversion Principle),
-✔ Repository nuk varet më nga File system direkt,
-✔ Mund të shtojmë DbRepository pa ndryshuar Service,
-✔ Mund të testojmë Repository duke mock-uar IFileStorage,
+* Mundëson mocking
+* Lehtëson testimin
+* Lejon zëvendësim të implementimeve
 
-Ky është një përmirësim arkitekturor real, jo vetëm stilistik.
+---
+
+## 🧠 Pse është më i mirë
+
+* ✔ Respekton SRP dhe DIP
+* ✔ Rrit testueshmërinë
+* ✔ Lehtëson zgjerimin (p.sh. DB)
+
+---
 
 # 3️⃣ Improvement 2 – Reliability & Validation Hardening
+
 ## 📌 Problemi Fillestar
 
-Versioni bazë kishte këto dobësi:
+* File që mungon → crash
+* ID jo-ekzistuese → exception i paqartë
+* Pa validim inputesh
+* Pa error handling
 
-Nëse mungonte CSV → aplikacioni dështonte,
-Nëse ID nuk ekzistonte → null reference,
-Nuk kishte validim për:
-emra bosh,
-çmime negative,
-sasi negative,
-Nuk kishte try-catch për IO errors.
+👉 Sistemi ishte i brishtë dhe jo user-friendly
 
-Kjo e bënte sistemin të brishtë (fragile).
+---
 
-# 🔧 Çfarë U Ndryshua
-## 2.1 Trajtim i File që mungon
-if (!storage.FileExists(_filePath))
+## 🔧 Çfarë U Ndryshua
+
+### ✔ File handling i sigurt
+
+* Krijohet file automatikisht nëse mungon
+
+### ✔ Validim në Service Layer
+
+* Kontroll për:
+
+  * emër bosh
+  * çmim negativ
+  * sasi negative
+
+### ✔ Trajtim i ID jo-ekzistues
+
+* Exception i qartë (`KeyNotFoundException`)
+
+### ✔ Error handling në UI
+
+* Try-catch për të shmangur crash
+
+---
+
+## 🧪 Unit Testing (NEW – Critical Improvement)
+
+Për të garantuar correctness, u shtuan teste bazë:
+
+```csharp
+[Test]
+public void AddChemical_ShouldThrow_WhenNameIsEmpty()
 {
-    storage.WriteAllLines(_filePath, new List<string>());
+    var service = new ChemicalService(mockRepo);
+
+    Assert.Throws<ArgumentException>(() =>
+        service.AddChemical(new Chemical { Name = "" }));
 }
+```
 
-Sistemi tani auto-krijon file nëse mungon.
-
-## 2.2 Validim i fortë në Service Layer
-public void AddChemical(Chemical chemical)
+```csharp
+[Test]
+public void GetById_ShouldThrow_WhenNotFound()
 {
-    if (string.IsNullOrWhiteSpace(chemical.Name))
-        throw new ArgumentException("Chemical name cannot be empty.");
-
-    if (chemical.Price <= 0)
-        throw new ArgumentException("Price must be greater than zero.");
-
-    if (chemical.Quantity < 0)
-        throw new ArgumentException("Quantity cannot be negative.");
-
-    _repository.Add(chemical);
-    _repository.Save();
+    Assert.Throws<KeyNotFoundException>(() =>
+        service.GetById(999));
 }
-## 2.3 Trajtim i ID që nuk ekziston
-public Chemical GetById(int id)
-{
-    var chemical = _repository.GetById(id);
+```
 
-    if (chemical == null)
-        throw new KeyNotFoundException($"Chemical with ID {id} not found.");
+👉 **Impact:**
 
-    return chemical;
-}
-## 2.4 Try-Catch në UI
-try
-{
-    service.DeleteChemical(id);
-    Console.WriteLine("Deleted successfully.");
-}
-catch (Exception ex)
-{
-    Console.WriteLine($"Error: {ex.Message}");
-}
-## 🧠 Pse Versioni i Ri Është Më i Mirë
+* Parandalon regresionet
+* Validon business logic
+* Rrit besueshmërinë e sistemit
 
-✔ Sistemi nuk crash-on më,
-✔ Parandalon të dhëna të korruptuara,
-✔ Kontroll i plotë i inputeve,
-✔ Error feedback i qartë për përdoruesin,
-✔ Respekton Defensive Programming.
+---
 
-Ky përmirësim rrit ndjeshëm robustness dhe production-readiness.
+## 🧠 Pse është më i mirë
 
-# 4️⃣ Improvement 3 – Advanced Documentation & Engineering Transparency
+* ✔ Nuk crash-on
+* ✔ Jep feedback të qartë
+* ✔ Është më i sigurt dhe stabil
+
+---
+
+# 4️⃣ Improvement 3 – Documentation & Engineering Transparency
+
 ## 📌 Problemi Fillestar
 
-Dokumentimi fillestar ishte:
+* Dokumentim sipërfaqësor
+* Pa shpjegim të vendimeve
 
-Funksional,
-Por më shumë përshkrues sesa analitik,
-Pa analizë të trade-offs,
-Pa reflektim mbi kufizimet.
-# 🔧 Çfarë U Ndryshua
-## 3.1 U shtua architecture.md i zgjeruar
+---
 
-Përfshin:
+## 🔧 Çfarë U Shtua
 
-Layer diagram,
-Dependency flow,
-Reasoning pse u përdor Repository,
-Trade-offs CSV vs Database,
-Limitimet aktuale.
-## 3.2 U shtua seksioni "Design Decisions"
+### ✔ architecture.md
 
-Shembull:
+* Diagram i layer-ve
+* Flow i dependencies
 
-CSV u përdor për thjeshtësi akademike, por në sistem real do të zëvendësohej me një relational database për concurrency dhe scalability.
+### ✔ Design Decisions
 
-## 3.3 U shtua seksioni "Known Limitations"
-Nuk ka concurrency control,
-Nuk ka unit tests automatike,
-Nuk ka logging framework profesional,
-Nuk ka authentication të avancuar,
-## 🧠 Pse Versioni i Ri Është Më i Mirë
+* CSV për thjeshtësi
+* DB për production
 
-✔ Tregon kuptim real të sistemit
-✔ Demonstron mendim kritik
-✔ Nuk pretendon perfeksion
-✔ Tregon maturi inxhinierike
+### ✔ Known Limitations
 
-# 5️⃣ Reflection – Mendim Kritik
+* No concurrency
+* No logging
+* No transactions
 
-Ky sprint tregoi se:
+### ✔ Setup Instructions (NEW)
 
-Struktura funksionale ≠ strukturë optimale,
-Kod që punon ≠ kod i qëndrueshëm,
-Arkitektura duhet menduar për zgjerim, jo vetëm për detyrë.
+* Si të ekzekutohet projekti
+* Si të strukturohen files
 
-Kam kuptuar rëndësinë e:
+---
 
-Abstraction layers,
-Defensive programming,
-Dokumentimit analitik,
-Refactoring si proces inxhinierik.
-# 6️⃣ Çfarë Mbetet Ende e Dobët
+## 🧠 Pse është më i mirë
 
-Edhe pas përmirësimeve, sistemi:
+* ✔ Lehtëson onboarding
+* ✔ Rrit transparencën
+* ✔ Reflekton mendim inxhinierik
 
-Nuk ka unit testing framework,
-Nuk ka logging me Serilog / NLog,
-Nuk ka concurrency control,
-Nuk ka versionim të skemës së të dhënave,
-Nuk ka autentikim me role reale.
+---
 
-Këto do të ishin hapat e ardhshëm për ta çuar sistemin drejt production-grade.
+# 5️⃣ Reflection – Critical Thinking
+
+Ky sprint tregoi që:
+
+* Kod që funksionon ≠ kod i mirë
+* Arkitektura është po aq e rëndësishme sa implementimi
+
+👉 **Gabim konkret:**
+Validimi fillimisht ishte në UI → shpërndarje e logjikës
+Zgjidhja → centralizim në Service layer
+
+👉 **Çfarë mësova:**
+
+* Abstraction është kritik për scalability
+* Separation of concerns rrit maintainability
+* Defensive programming parandalon bug-e
+* Refactoring është proces i vazhdueshëm
+
+---
+
+# 6️⃣ Remaining Weaknesses
+
+## High Priority
+
+* Logging (Serilog / NLog)
+* Test coverage më i gjerë
+
+## Medium
+
+* Concurrency control
+* Data persistence me DB
+
+## Low
+
+* Authentication
+
+---
 
 # 7️⃣ Final Conclusion
 
-Improvement Sprint nuk ishte shtim features, por:
+Ky sprint nuk ishte për shtim features, por për:
 
-Ristrukturim arkitekturor,
-Rritje e reliability,
-Thellim dokumentimi,
-Demonstrim i kuptimit inxhinierik.
+* Ristrukturim arkitekturor
+* Rritje të reliability
+* Përmirësim të dokumentimit
 
-Projekti tani:
+👉 Sistemi tani është:
 
-Është më modular,
-Është më i testueshëm,
-Është më robust,
-Është më i dokumentuar,
-Është më i arsyetuar teknikisht.
+* Modular
+* I testueshëm
+* Robust
+* I gatshëm për zgjerim
 
-Ky reflektim demonstron jo vetëm implementim, por kuptim të thellë të parimeve të inxhinierisë së softuerit.
+Ky refactor e transformon projektin nga një aplikacion akademik në një bazë solide për një sistem production-grade.
+
+---
