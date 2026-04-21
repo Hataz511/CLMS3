@@ -120,7 +120,7 @@ ui.Run();
 * Service → validation dhe business logic
 
 👉 Ky ndryshim ul kompleksitetin dhe rrit modularitetin.
-## System Architecture Flow
+### System Architecture Flow
 
 UI → Service → Repository → FileStorage → CSV
 ---
